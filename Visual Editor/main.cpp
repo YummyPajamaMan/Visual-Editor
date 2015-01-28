@@ -10,11 +10,13 @@
 #include <allegro5/allegro_physfs.h>
 #include <allegro5/allegro_native_dialog.h>
 #include <fstream>
-#include <cstdlib>
+#include <string>
 
 using namespace std;
 
 #define ALLEGRO_PI	3.14159265358979323846
+
+const char * title = "Visual Editor 0.1.0.3";		//Major.Minor.Bug.Commit#
 
 ofstream initAllegroFuncLog;			//Keeping track of which init function succeeded or failed
 ofstream installAllegroFuncLog;			//Keeping track of which install function succeeded or failed
@@ -129,7 +131,9 @@ int main(int argc, char ** argv)
 	//Set background to color
 	al_clear_to_color(al_map_rgb(0,0,0));
 
+	//Set title of application
 
+	al_set_window_title(window,  title);
 
 	
 	
@@ -145,5 +149,3 @@ int main(int argc, char ** argv)
 
 	return 0;
 }
-
-#define buildNum 0
