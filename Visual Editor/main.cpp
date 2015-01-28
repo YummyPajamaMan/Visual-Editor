@@ -15,8 +15,8 @@ using namespace std;
 
 #define ALLEGRO_PI	3.14159265358979323846
 
-#define LOG allegroLog					//Change name of log when applicable (third position)
-#define LOGSTRING "allegroLog"			//Change name of string log when applicable (third position)
+#define LOG allegroLog					//The name of log in program
+#define LOGSTRING "allegroLog"			//The name of log in .txt file
 
 const bool DISPLAYMODEFULL = false;		//Determine here whether display mode will be full or not		
 
@@ -40,8 +40,7 @@ int main(int argc, char ** argv)
 
 
 
-
-
+#pragma region al_init al_install output to .txt file
 
 	if (al_init())
 	{
@@ -141,17 +140,11 @@ int main(int argc, char ** argv)
 		return -1;
 	}
 
+#pragma endregion
 
 
 
 
-
-
-
-
-
-
-	
 
 	bool redraw = true;
 
@@ -159,6 +152,7 @@ int main(int argc, char ** argv)
 	
 
 
+#pragma region Display_Mode_And_Window_Config
 	
 	//If display mode full is true
 	if (DISPLAYMODEFULL)
@@ -189,12 +183,10 @@ int main(int argc, char ** argv)
 		window = al_create_display(windowWidth, windowHeight);
 	}
 	
+#pragma endregion
 
 
-
-
-
-	
+#pragma region window output to .txt file
 
 	if (window)
 	{
@@ -207,13 +199,15 @@ int main(int argc, char ** argv)
 		return -1;
 	}
 
-
+#pragma endregion
 
 
 
 
 	//Create event queue
 	ALLEGRO_EVENT_QUEUE * event_queue = al_create_event_queue();
+
+#pragma region event_queue output to .txt file
 
 	if (event_queue)
 	{
@@ -228,11 +222,13 @@ int main(int argc, char ** argv)
 		return -1;
 	}
 
-
+#pragma endregion
 
 
 	//Create timer
 	ALLEGRO_TIMER * timer = al_create_timer(1.0 / FPS);
+
+#pragma region timer output to .txt file
 
 	if (timer)
 	{
@@ -248,6 +244,7 @@ int main(int argc, char ** argv)
 		return -1;
 	}
 
+#pragma endregion
 
 
 	//Close log file
@@ -289,7 +286,7 @@ int main(int argc, char ** argv)
 	
 	
 	
-	
+#pragma region Main_Loop
 	
 	////////////////main loop/////////////////
 	while (true)
@@ -319,10 +316,12 @@ int main(int argc, char ** argv)
 			break;
 		}
 		
-		//
+		//After checking all events in the queue and redraw is true
 		if (redraw && al_is_event_queue_empty(event_queue))
 		{
 			redraw = false;
+
+			//Game Visuals go here
 
 			//Clear bitmap and set to black
 			al_clear_to_color(al_map_rgb(0,0,0));
@@ -332,7 +331,7 @@ int main(int argc, char ** argv)
 		}
 	}
 
-	
+#pragma endregion
 
 	
 	
