@@ -15,18 +15,26 @@ using namespace std;
 
 #define ALLEGRO_PI	3.14159265358979323846
 
-#define LOG allegroLog							//Change name of log when applicable (third position)
-#define LOGSTRING "allegroLog"					//Change name of string log when applicable (third position)
+#define LOG allegroLog					//Change name of log when applicable (third position)
+#define LOGSTRING "allegroLog"			//Change name of string log when applicable (third position)
 
-const char * title = "Visual Editor 0.1.0.3";		//Major.Minor.Bug.Commit#
+const bool DISPLAYMODEFULL = false;		//Determine here whether display mode will be full or not		
+
+const char * title = "Visual Editor 0.0.0.5";		//Major.Minor.Bug.Commit#
 const double FPS = 30;								//Frames per second
 
+//Window resolution (4:3)
+const int windowWidth = 640;
+const int windowHeight = 480;
+
 ofstream LOG;			//Keep track of which function and pointer succeeded or failed
+
+//Underscore is maybe 8 pixels wide
 
 int main(int argc, char ** argv)
 {
 	
-	
+	//Macro LOGSTRING expands and automatically concatenate with .txt string
 	LOG.open(LOGSTRING".txt");		//Open init log file
 	
 
@@ -143,16 +151,50 @@ int main(int argc, char ** argv)
 
 
 
-	//Window resolution
-	int windowWidth = 640;
-	int windowHeight = 480;
+	
 
 	bool redraw = true;
 
+	ALLEGRO_DISPLAY * window;
+	
 
 
-	//Create display
-	ALLEGRO_DISPLAY * window = al_create_display(windowWidth, windowHeight);
+	
+	//If display mode full is true
+	if (DISPLAYMODEFULL)
+	{
+		//The monitor information will be stored in the displayData structure
+		ALLEGRO_DISPLAY_MODE displayData;
+
+		//displayData populated by al_get_display_mode() with monitor display information
+		//
+		//al_get_num_display_modes() return the total number of display modes (or resolutions)
+		// that the monitor is able to handle, then subtract 1 to get the last index
+		//
+		al_get_display_mode(al_get_num_display_modes()-1, &displayData);
+
+		//Set to display in full screen
+		al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+
+		//Create display
+		//Everything on screen will depend on displayData.width and displayData.height when
+		// in full screen mode
+		window = al_create_display(displayData.width, displayData.height);
+	}
+
+	//Else display in lowest resolution
+	else
+	{
+		//Create display
+		window = al_create_display(windowWidth, windowHeight);
+	}
+	
+
+
+
+
+
+	
 
 	if (window)
 	{
@@ -164,6 +206,8 @@ int main(int argc, char ** argv)
 
 		return -1;
 	}
+
+
 
 
 
@@ -218,6 +262,9 @@ int main(int argc, char ** argv)
 
 	//Register the timer's events in our event queue so as to fetch the events later
 	al_register_event_source(event_queue, al_get_timer_event_source(timer));
+
+	//Register the keyboard's events in our event queue so as to fetch the events later
+	al_register_event_source(event_queue, al_get_keyboard_event_source());
 	
 
 
@@ -237,7 +284,7 @@ int main(int argc, char ** argv)
 	al_start_timer(timer);
 
 
-
+	
 	
 	
 	
@@ -266,6 +313,12 @@ int main(int argc, char ** argv)
 			break;
 		}
 
+		//If the event is escape key up, break out of loop
+		else if (ev.type == ALLEGRO_EVENT_KEY_UP)
+		{
+			break;
+		}
+		
 		//
 		if (redraw && al_is_event_queue_empty(event_queue))
 		{
