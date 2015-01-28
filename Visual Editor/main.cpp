@@ -10,6 +10,7 @@
 #include <allegro5/allegro_physfs.h>
 #include <allegro5/allegro_native_dialog.h>
 #include <fstream>
+#include <cstdlib>
 
 using namespace std;
 
@@ -20,7 +21,7 @@ ofstream installAllegroFuncLog;			//Keeping track of which install function succ
 
 int main(int argc, char ** argv)
 {
-	//---------Func logs--------------------------------------------------------------------
+	//---------Func logs Debug only--------------------------------------------------------------------
 
 	initAllegroFuncLog.open("initAllegroFuncLog.txt");		//Open init log file
 	
@@ -113,7 +114,7 @@ int main(int argc, char ** argv)
 	initAllegroFuncLog.close();
 	installAllegroFuncLog.close();
 
-	//---------Func logs end--------------------------------------------------------------------
+	//---------Func logs Debug only end--------------------------------------------------------------------
 
 
 	//---------------------------------------------------------------------
@@ -130,6 +131,8 @@ int main(int argc, char ** argv)
 
 
 
+	
+	
 
 
 
@@ -142,3 +145,5 @@ int main(int argc, char ** argv)
 
 	return 0;
 }
+
+#define buildNum 0
