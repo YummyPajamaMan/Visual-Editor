@@ -20,7 +20,7 @@ using namespace std;
 
 const bool DISPLAYMODEFULL = false;		//Determine here whether display mode will be full or not		
 
-const char * title = "Visual Editor 0.0.0.5";		//Major.Minor.Bug.Commit#
+const char * title = "Visual Editor 0.0.0.7";		//Major.Minor.Bug.Commit#
 const double FPS = 30;								//Frames per second
 
 //Window resolution (4:3)
