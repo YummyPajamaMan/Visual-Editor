@@ -18,18 +18,27 @@ using namespace std;
 #define LOG allegroLog					//The name of log in program
 #define LOGSTRING "allegroLog"			//The name of log in .txt file
 
+//Color code
+#define RED   255,0,0
+#define GREEN 0,255,0
+#define BLUE  0,0,255
+#define BLACK 0,0,0
+#define WHITE 255,255,255
+
 const bool DISPLAYMODEFULL = false;		//Determine here whether display mode will be full or not		
 
-const char * title = "Visual Editor 0.0.0.7";		//Major.Minor.Bug.Commit#
-const double FPS = 30;								//Frames per second
+const char * title = "Visual Editor 0.0.0.8";		//Major.Minor.Bug.Commit#
+const double FPS = 24;								//Frames per second
 
-//Window resolution (4:3)
+//Window resolution (16:9)
 const int windowWidth = 640;
-const int windowHeight = 480;
+const int windowHeight = 360;
 
 ofstream LOG;			//Keep track of which function and pointer succeeded or failed
 
-//Underscore is maybe 8 pixels wide
+//Everything above main must be constant (except ofstream)
+
+//NOTE: if pixel dimension is less than one it will not show
 
 int main(int argc, char ** argv)
 {
@@ -144,12 +153,22 @@ int main(int argc, char ** argv)
 
 
 
+	bool keyPressed[ALLEGRO_KEY_MAX];
 
+	//Assign to each pressed key the initial value of false
+	for (int keyPosition = 0; keyPosition < ALLEGRO_KEY_MAX; keyPosition++)
+	{
+		keyPressed[keyPosition] = false;
+	}
 
 	bool redraw = true;
 
+
+
+
 	ALLEGRO_DISPLAY * window;
 	
+	ALLEGRO_BITMAP * icon = NULL; //al_load_bitmap("image/1.png");		//Choose what image to use for icon
 
 
 #pragma region Display_Mode_And_Window_Config
@@ -254,6 +273,7 @@ int main(int argc, char ** argv)
 
 
 
+
 	//Register the display's events in our event queue so as to fetch the events later
 	al_register_event_source(event_queue, al_get_display_event_source(window));
 
@@ -271,6 +291,9 @@ int main(int argc, char ** argv)
 	//Set title of application
 	al_set_window_title(window,  title);
 
+	//Set window icon after changing icon from NULL to valid image
+	//al_set_display_icon(window,icon)
+
 	//Clear bitmap and set to black
 	al_clear_to_color(al_map_rgb(0,0,0));
 
@@ -284,36 +307,248 @@ int main(int argc, char ** argv)
 	
 	
 	
-	
+	bool continueLoop = true;
 	
 #pragma region Main_Loop
 	
-	////////////////main loop/////////////////
-	while (true)
+	////////////////////main loop/////////////////////////
+	while (continueLoop)
 	{
-		ALLEGRO_EVENT ev;			//Short for event
+		////////////////////Define section///////////////////
+		
+		static class Cursor
+		{
+			float width;
+			float height;
+			float x1;
+			float y1;
+			float x2;
+			float y2;
+			
+		public:
+			Cursor (float x1value, float y1value, float widthValue, float heightValue)
+			{
+				width = windowWidth/640*widthValue;
+				height = windowHeight/360*heightValue;
+				x1 = windowWidth/640*x1value;
+				y1 = windowHeight/360*y1value;
+				x2 = x1+width;
+				y2 = y1;
+			}
+
+			//Default position
+			Cursor ()
+			{
+				width = windowWidth/640*8;
+				height = windowHeight/360*3;
+				x1 = 0;
+				y1 = 0;
+				x2 = x1+width;
+				y2 = y1;
+			}
+
+			void setx1y1(float x1value, float y1value)
+			{
+				x1 = windowWidth/640*x1value;
+				y1 = windowHeight/360*y1value;
+				x2 = x1+width;
+				y2 = y1;
+			}
+
+			void setWidth(float widthValue)
+			{
+				width = widthValue;
+			}
+
+			void setHeight(float heightValue)
+			{
+				height = heightValue;
+			}
+
+			float getWidth()
+			{
+				return width;
+			}
+
+			float getHeight()
+			{
+				return height;
+			}
+
+			float getx1()
+			{
+				return x1;
+			}
+
+			float gety1()
+			{
+				return y1;
+			}
+
+			float getx2()
+			{
+				return x2;
+			}
+
+			float gety2()
+			{
+				return y2;
+			}
+		};
+
+		static ALLEGRO_COLOR  cursorPixelColor;								//To be passed to al_map_rgb
+		static Cursor cursor (16,16,16,6);										//(x1,y1,width,height)
+
+
+		static ALLEGRO_EVENT  ev;						//Short for event
+		
+		//////////////////End Define section/////////////////
 
 		//Wait for event in the event queue to fire then assign to ev thus removing from the event queue
 		al_wait_for_event(event_queue, &ev);
 
-		//If the event is a timer event, trigger a redraw
+		//If the event is a timer event, trigger a redraw and process game logic
 		if(ev.type == ALLEGRO_EVENT_TIMER)
 		{
 			redraw = true;
 
-			//Game Logic goes here
+			//The number of times the clock ticked
+			static int tickNumber = 0;
+
+			//Everytime the clock ticks increase the tick number by one
+			tickNumber++;
+
+			///////////////////////////////////Game Logic////////////////////////////////////////////
+			
+			//After 12 out of 24 ticks the underscore will be black
+			if (tickNumber == 12)
+			{
+				cursorPixelColor = al_map_rgb(BLACK);
+			}
+
+			//After 24 out of 24 ticks the underscore will be green
+			//If the tick number is 30 assign it the value 0 and the underscore will be green
+			if (tickNumber == 24)
+			{
+				cursorPixelColor = al_map_rgb(GREEN);
+				
+				tickNumber = 0;
+			}
+
+			//If key pressed is 'a'
+			if (keyPressed[ALLEGRO_KEY_A])
+			{
+				cursor.setx1y1(cursor.getx1()-cursor.getWidth(), cursor.gety1());
+			}
+
+			//If key pressed is 's'
+			if (keyPressed[ALLEGRO_KEY_S])
+			{
+				cursor.setx1y1(cursor.getx1(), cursor.gety1()+cursor.getHeight());
+			}
+
+			//If key pressed is 's'
+			if (keyPressed[ALLEGRO_KEY_D])
+			{
+				cursor.setx1y1(cursor.getx1()+cursor.getWidth(), cursor.gety1());
+			}
+
+			//If key pressed is 's'
+			if (keyPressed[ALLEGRO_KEY_W])
+			{
+				cursor.setx1y1(cursor.getx1(), cursor.gety1()-cursor.getHeight());
+			}
+
+			/////////////////////////////////End Game Logic//////////////////////////////////////////
+		
 		}
 
-		//If the event is to close window, break out of loop (user clicked the x button)
+		//Else if the event is to close window, break out of loop (user clicked the x button)
 		else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
 		{
-			break;
+			continueLoop = false;
 		}
 
-		//If the event is escape key up, break out of loop
+		//Else if the event is any key down
+		else if (ev.type == ALLEGRO_EVENT_KEY_DOWN)
+		{
+			switch (ev.keyboard.keycode)
+			{
+			
+			//If event is key 'a' down
+			case ALLEGRO_KEY_A:
+
+				keyPressed[ev.keyboard.keycode] = true;
+
+				break;
+			
+			//If event is key 's' down
+			case ALLEGRO_KEY_S:
+
+				keyPressed[ev.keyboard.keycode] = true;
+
+				break;
+			
+			//If event is key 'd' down
+			case ALLEGRO_KEY_D:
+				
+				keyPressed[ev.keyboard.keycode] = true;
+
+				break;
+
+			//If event is key 'w' down
+			case ALLEGRO_KEY_W:
+
+				keyPressed[ev.keyboard.keycode] = true;
+
+				break;
+			}
+
+			
+			
+		}
+
+		//Else if the event is any key up
 		else if (ev.type == ALLEGRO_EVENT_KEY_UP)
 		{
-			break;
+			switch (ev.keyboard.keycode)
+			{
+				//If event is key 'esc' up
+				case ALLEGRO_KEY_ESCAPE:
+
+					//Application closes
+					continueLoop = false;
+
+					break;
+				//If event is key 'a' up
+				case ALLEGRO_KEY_A:
+
+					keyPressed[ev.keyboard.keycode] = false;
+
+					break;
+
+				//If event is key 's' up
+				case ALLEGRO_KEY_S:
+
+					keyPressed[ev.keyboard.keycode] = false;
+
+					break;
+			
+				//If event is key 'd' up
+				case ALLEGRO_KEY_D:
+				
+					keyPressed[ev.keyboard.keycode] = false;
+
+					break;
+
+				//If event is key 'w' up
+				case ALLEGRO_KEY_W:
+
+					keyPressed[ev.keyboard.keycode] = false;
+
+					break;
+			}
+
 		}
 		
 		//After checking all events in the queue and redraw is true
@@ -321,10 +556,17 @@ int main(int argc, char ** argv)
 		{
 			redraw = false;
 
-			//Game Visuals go here
-
 			//Clear bitmap and set to black
-			al_clear_to_color(al_map_rgb(0,0,0));
+			al_clear_to_color(al_map_rgb(BLACK));
+
+			///////////////Game Visuals (Everything is redrawn below this line)///////////////
+
+			//Draw cursor to screen
+			al_draw_line(cursor.getx1(), cursor.gety1(), cursor.getx2(), cursor.gety2(), cursorPixelColor, cursor.getHeight());
+
+			
+
+			/////////////////////////////////End Game Visuals/////////////////////////////////
 
 			//Update screen
 			al_flip_display();
