@@ -10,6 +10,7 @@
 #include <allegro5/allegro_physfs.h>
 #include <allegro5/allegro_native_dialog.h>
 #include <fstream>
+#include <vector>
 
 using namespace std;
 
@@ -27,7 +28,7 @@ using namespace std;
 
 const bool DISPLAYMODEFULL = false;		//Determine here whether display mode will be full or not		
 
-const char * title = "Visual Editor 0.0.0.8";		//Major.Minor.Bug.Commit#
+const char * title = "Visual Editor 0.0.0.9";		//Major.Minor.Bug.Commit#
 const double FPS = 24;								//Frames per second
 
 //Window resolution (16:9)
@@ -297,112 +298,159 @@ int main(int argc, char ** argv)
 	//Clear bitmap and set to black
 	al_clear_to_color(al_map_rgb(0,0,0));
 
+
+
+
+	///////////////////////////Static background section//////////////////////////////
+
+
+
+	/////////////////////////End Static background section////////////////////////////
+
+
+
+
 	//Update screen
 	al_flip_display();
 
 	//Start the timer
 	al_start_timer(timer);
 
+#pragma region Game Define Section
 
-	
-	
-	
+	////////////////////Game Define Section///////////////////
+
 	bool continueLoop = true;
+		
+	class Line
+	{
+		float width;
+		float height;
+		float x1;
+		float y1;
+		float x2;
+		float y2;
+			
+	public:
+		Line (float x1value, float y1value, float x2value, float y2value, float widthValue, float heightValue)
+		{
+			width = windowWidth/640*widthValue;
+			height = windowHeight/360*heightValue;
+			x1 = windowWidth/640*x1value;
+			y1 = windowHeight/360*y1value;
+			x2 = windowWidth/640*x2value;
+			y2 = windowHeight/360*y2value;
+		}
+
+		//Default constructor
+		Line ()
+		{
+			width = 1;
+			height = 1;
+			x1 = 0;
+			y1 = 0;
+			x2 = 0;
+			y2 = 0;
+		}
+
+		void setx1y1(float x1value, float y1value)
+		{
+			x1 = windowWidth/640*x1value;
+			y1 = windowHeight/360*y1value;
+		}
+
+		void setx2y2(float x2value, float y2value)
+		{
+			x2 = windowWidth/640*x2value;
+			y2 = windowHeight/360*y2value;
+		}
+
+		void setWidth(float widthValue)
+		{
+			width = widthValue;
+		}
+
+		void setHeight(float heightValue)
+		{
+			height = heightValue;
+		}
+
+		float getWidth()
+		{
+			return width;
+		}
+
+		float getHeight()
+		{
+			return height;
+		}
+
+		float getx1()
+		{
+			return x1;
+		}
+
+		float gety1()
+		{
+			return y1;
+		}
+
+		float getx2()
+		{
+			return x2;
+		}
+
+		float gety2()
+		{
+			return y2;
+		}
+	};
+
+	ALLEGRO_COLOR  cursorPixelColor;			//To be passed to al_map_rgb
+
+	Line cursor (16,16,16,6,16,3);				//(x1,y1,x2,y2,width,height)		Can change values
+
+	int linePositionInPercentage = 5;			//The percentage of empty space between each line
+												// referencing horizontal or vertical line 
+												// (but not both)
+												// Can change value
+
+	//If percentage is not whole, end program
+	//double divided by int will return a double
+	if (100.0/linePositionInPercentage)
+	{
+		al_show_native_message_box(window, "Percentage Not Whole", "Percentage Not Whole Error", 
+			"linePositionInPercentage is not divisible into 100 (contact the developer)",
+			NULL, ALLEGRO_MESSAGEBOX_ERROR);
+
+		continueLoop = false;
+	}
+
+	vector<Line> verticalGridLines(100/linePositionInPercentage,Line());	//For guidance on screen
+	vector<Line> horizontalGridLines(100/linePositionInPercentage,Line());	//For guidance on screen
+
+	ALLEGRO_EVENT  ev;						//Short for event
+		
+	//////////////////End Define Section/////////////////
+
+#pragma endregion 
 	
+	//If x and y resolution is not divisible by five
+	if (windowHeight % 5 != 0 && windowWidth % 5 != 0)
+	{
+		al_show_native_message_box(window, "Screen Resolution", "Screen Resolution Error", 
+			"The screen resolution is not divisible by 5",
+			NULL, ALLEGRO_MESSAGEBOX_ERROR);
+
+		continueLoop = false;
+	}
+
 #pragma region Main_Loop
 	
 	////////////////////main loop/////////////////////////
 	while (continueLoop)
 	{
-		////////////////////Define section///////////////////
 		
-		static class Cursor
-		{
-			float width;
-			float height;
-			float x1;
-			float y1;
-			float x2;
-			float y2;
-			
-		public:
-			Cursor (float x1value, float y1value, float widthValue, float heightValue)
-			{
-				width = windowWidth/640*widthValue;
-				height = windowHeight/360*heightValue;
-				x1 = windowWidth/640*x1value;
-				y1 = windowHeight/360*y1value;
-				x2 = x1+width;
-				y2 = y1;
-			}
-
-			//Default position
-			Cursor ()
-			{
-				width = windowWidth/640*8;
-				height = windowHeight/360*3;
-				x1 = 0;
-				y1 = 0;
-				x2 = x1+width;
-				y2 = y1;
-			}
-
-			void setx1y1(float x1value, float y1value)
-			{
-				x1 = windowWidth/640*x1value;
-				y1 = windowHeight/360*y1value;
-				x2 = x1+width;
-				y2 = y1;
-			}
-
-			void setWidth(float widthValue)
-			{
-				width = widthValue;
-			}
-
-			void setHeight(float heightValue)
-			{
-				height = heightValue;
-			}
-
-			float getWidth()
-			{
-				return width;
-			}
-
-			float getHeight()
-			{
-				return height;
-			}
-
-			float getx1()
-			{
-				return x1;
-			}
-
-			float gety1()
-			{
-				return y1;
-			}
-
-			float getx2()
-			{
-				return x2;
-			}
-
-			float gety2()
-			{
-				return y2;
-			}
-		};
-
-		static ALLEGRO_COLOR  cursorPixelColor;								//To be passed to al_map_rgb
-		static Cursor cursor (16,16,16,6);										//(x1,y1,width,height)
-
-
-		static ALLEGRO_EVENT  ev;						//Short for event
-		
-		//////////////////End Define section/////////////////
 
 		//Wait for event in the event queue to fire then assign to ev thus removing from the event queue
 		al_wait_for_event(event_queue, &ev);
@@ -418,8 +466,30 @@ int main(int argc, char ** argv)
 			//Everytime the clock ticks increase the tick number by one
 			tickNumber++;
 
+#pragma region Game Logic
+
 			///////////////////////////////////Game Logic////////////////////////////////////////////
 			
+			//Set vertical grid lines
+			for (unsigned int i = 0, xResolution = 0; i < verticalGridLines.size(); i++, xResolution+=linePositionInPercentage/100*windowWidth)
+			{
+				//Set first x,y point
+				verticalGridLines[i].setx1y1(xResolution,0);
+
+				//Set second x,y point
+				verticalGridLines[i].setx2y2(xResolution,windowHeight);
+			}
+
+			//Set horizontal grid lines
+			for (unsigned int i = 0, yResolution = 0; i < verticalGridLines.size(); i++, yResolution+=linePositionInPercentage/100*windowHeight)
+			{
+				//Set first x,y point
+				horizontalGridLines[i].setx1y1(0,yResolution);
+
+				//Set second x,y point
+				horizontalGridLines[i].setx2y2(windowWidth,yResolution);
+			}
+
 			//After 12 out of 24 ticks the underscore will be black
 			if (tickNumber == 12)
 			{
@@ -438,36 +508,98 @@ int main(int argc, char ** argv)
 			//If key pressed is 'a'
 			if (keyPressed[ALLEGRO_KEY_A])
 			{
+				//Set (x1,y1)
 				cursor.setx1y1(cursor.getx1()-cursor.getWidth(), cursor.gety1());
+				
+				//Set (x2,y2)
+				cursor.setx2y2(cursor.getx1()-cursor.getWidth(), cursor.gety1());
 			}
 
 			//If key pressed is 's'
 			if (keyPressed[ALLEGRO_KEY_S])
 			{
+				//Set (x1,y1)
 				cursor.setx1y1(cursor.getx1(), cursor.gety1()+cursor.getHeight());
+
+				//Set (x2,y2)
+				cursor.setx2y2(cursor.getx1(), cursor.gety1()+cursor.getHeight());
 			}
 
-			//If key pressed is 's'
+			//If key pressed is 'd'
 			if (keyPressed[ALLEGRO_KEY_D])
 			{
+				//Set (x1,y1)
 				cursor.setx1y1(cursor.getx1()+cursor.getWidth(), cursor.gety1());
+				
+				//Set (x2,y2)
+				cursor.setx2y2(cursor.getx1()+cursor.getWidth(), cursor.gety1());
 			}
 
-			//If key pressed is 's'
+			//If key pressed is 'w'
 			if (keyPressed[ALLEGRO_KEY_W])
 			{
+				//Set (x1,y1)
 				cursor.setx1y1(cursor.getx1(), cursor.gety1()-cursor.getHeight());
+
+				//Set (x2,y2)
+				cursor.setx2y2(cursor.getx1(), cursor.gety1()-cursor.getHeight());
+			}
+
+			//If key pressed is left
+			if (keyPressed[ALLEGRO_KEY_LEFT])
+			{
+				//Set (x1,y1)
+				cursor.setx1y1(cursor.getx1()-cursor.getWidth(), cursor.gety1());
+				
+				//Set (x2,y2)
+				cursor.setx2y2(cursor.getx1()-cursor.getWidth(), cursor.gety1());
+			}
+
+			//If key pressed is down
+			if (keyPressed[ALLEGRO_KEY_DOWN])
+			{
+				//Set (x1,y1)
+				cursor.setx1y1(cursor.getx1(), cursor.gety1()+cursor.getHeight());
+
+				//Set (x2,y2)
+				cursor.setx2y2(cursor.getx1(), cursor.gety1()+cursor.getHeight());
+			}
+
+			//If key pressed is right
+			if (keyPressed[ALLEGRO_KEY_RIGHT])
+			{
+				//Set (x1,y1)
+				cursor.setx1y1(cursor.getx1()+cursor.getWidth(), cursor.gety1());
+				
+				//Set (x2,y2)
+				cursor.setx2y2(cursor.getx1()+cursor.getWidth(), cursor.gety1());
+			}
+
+			//If key pressed is up
+			if (keyPressed[ALLEGRO_KEY_UP])
+			{
+				//Set (x1,y1)
+				cursor.setx1y1(cursor.getx1(), cursor.gety1()-cursor.getHeight());
+
+				//Set (x2,y2)
+				cursor.setx2y2(cursor.getx1(), cursor.gety1()-cursor.getHeight());
 			}
 
 			/////////////////////////////////End Game Logic//////////////////////////////////////////
 		
+#pragma endregion
+
 		}
 
 		//Else if the event is to close window, break out of loop (user clicked the x button)
 		else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
 		{
 			continueLoop = false;
+
+			continue;
 		}
+
+#pragma region event_key_down
 
 		//Else if the event is any key down
 		else if (ev.type == ALLEGRO_EVENT_KEY_DOWN)
@@ -502,11 +634,42 @@ int main(int argc, char ** argv)
 				keyPressed[ev.keyboard.keycode] = true;
 
 				break;
-			}
 
+			//If event is key 'left' down
+			case ALLEGRO_KEY_LEFT:
+
+				keyPressed[ev.keyboard.keycode] = true;
+
+				break;
+
+			//If event is key 'down' down
+			case ALLEGRO_KEY_DOWN:
+
+				keyPressed[ev.keyboard.keycode] = true;
+
+				break;
 			
+			//If event is key 'right' down
+			case ALLEGRO_KEY_RIGHT:
+
+				keyPressed[ev.keyboard.keycode] = true;
+
+				break;
+			
+			//If event is key 'up' down
+			case ALLEGRO_KEY_UP:
+
+				keyPressed[ev.keyboard.keycode] = true;
+
+				break;
+
+			}
 			
 		}
+
+#pragma endregion
+
+#pragma region event_key_up
 
 		//Else if the event is any key up
 		else if (ev.type == ALLEGRO_EVENT_KEY_UP)
@@ -547,26 +710,73 @@ int main(int argc, char ** argv)
 					keyPressed[ev.keyboard.keycode] = false;
 
 					break;
+
+				//If event is key 'left' down
+				case ALLEGRO_KEY_LEFT:
+
+					keyPressed[ev.keyboard.keycode] = false;
+
+					break;
+
+				//If event is key 'down' down
+				case ALLEGRO_KEY_DOWN:
+
+					keyPressed[ev.keyboard.keycode] = false;
+
+					break;
+			
+				//If event is key 'right' down
+				case ALLEGRO_KEY_RIGHT:
+
+					keyPressed[ev.keyboard.keycode] = false;
+
+					break;
+			
+				//If event is key 'up' down
+				case ALLEGRO_KEY_UP:
+
+					keyPressed[ev.keyboard.keycode] = false;
+
+					break;
+
 			}
 
 		}
+
+#pragma endregion
 		
 		//After checking all events in the queue and redraw is true
 		if (redraw && al_is_event_queue_empty(event_queue))
 		{
 			redraw = false;
 
+			//Set vertical grid line
+			
+
+			//Set horizontal grid line
+
+
+			////Starting from background to the very front of the screen below this line////
+
 			//Clear bitmap and set to black
 			al_clear_to_color(al_map_rgb(BLACK));
+
+#pragma region Game Visuals
 
 			///////////////Game Visuals (Everything is redrawn below this line)///////////////
 
 			//Draw cursor to screen
 			al_draw_line(cursor.getx1(), cursor.gety1(), cursor.getx2(), cursor.gety2(), cursorPixelColor, cursor.getHeight());
 
-			
+			//Draw the vertical lines
+			//////////al_draw_line();
+
+			//Draw the horizontal lines
+
 
 			/////////////////////////////////End Game Visuals/////////////////////////////////
+
+#pragma endregion
 
 			//Update screen
 			al_flip_display();
@@ -574,14 +784,6 @@ int main(int argc, char ** argv)
 	}
 
 #pragma endregion
-
-	
-	
-	
-	
-	
-	
-	
 	
 
 	//Stops current thread here for a number of second(s)
